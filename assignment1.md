@@ -1,15 +1,22 @@
-## Assignment 1 Practice
+## Assignment for Week 1 ##
 
-<p>Assignment for Week 1</p>
-<br>
-Creating and adding a file to my repository
-<br>
+Practicing creating and adding a file to my repository from the terminal:
 
 ```bash
 echo "Hello world" > assignment1.txt
 git add assignment1.txt
 git commit -m "Add assignment1.txt"
 git push origin main
+```
+
+Checking samtools version for bioinfo env:
+```bash
+cd ~/bioinfo
+pwd
+samtools --version
+samtools 1.22.1
+Using htslib 1.22.1
+Copyright (C) 2025 Genome Research Ltd.
 ```
 
 Creating and changing to a new directory for week 1
