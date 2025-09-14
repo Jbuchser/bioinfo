@@ -90,24 +90,25 @@ Next, I determined the number and type of sequence regions:
 The simplified version has only genes, whereas the non-simplified contains sequence region data and some ncRNA. 
 
 **Simplified**:
-![Alt text](/Users/jessicabuchser/bioinfo/week3/igv/igv_snapshot_simp.png)
+![Alt text](igv/igv_snapshot_simp.png)
+
 
 **Non-simplified**:
-![Alt text](/Users/jessicabuchser/bioinfo/week3/igv/igv_snapshot_nonsimp.png)
+![Alt text](igv/igv_snapshot_nonsimp.png)
 
 ### 5. Strand orientation and gene start
 
 Below is an example of a gene start site with methionine appearing in Frame 1, but encoded as TGA: 
 
-![Alt text](/Users/jessicabuchser/bioinfo/week3/igv/igv_snapshot_reverse.png)
+![Alt text](igv/igv_snapshot_reverse.png)
 
 By flipping the strand orientation, the methionine start codon ATG is now present in frame 2. Additionally, the appropriate stop codon (TGA) appears for the neighboring gene in frame 2. 
 
-![Alt text](/Users/jessicabuchser/bioinfo/week3/igv/igv_snapshot_forward.png)
+![Alt text](igv/igv_snapshot_forward.png)
 
 
 ### 6. Visual verification of start and stop codons
 
-![Alt text](/Users/jessicabuchser/bioinfo/week3/igv/igv_snapshot_start_stop.png)
+![Alt text](igv/igv_snapshot_start_stop.png)
 
 
