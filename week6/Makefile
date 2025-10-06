@@ -23,13 +23,16 @@ MAKEFLAGS += --no-builtin-rules
 NAME=MRSA-USA300
 
 #NCBI Genome accession number
-ACC=AP017922.1
+ACC=NZ_CP183317.1
 
 # SRR accession number 
 SRR=SRR21835901
 
 # reference genome
 REF=refs/${NAME}.fa
+
+# reference annotation
+GFF=refs/${NAME}.gff
 
 # reads directory
 READS_DIR=reads
@@ -48,13 +51,15 @@ N=10000
 
 # ----------------
 
-download:
+genome:
 	# Step 1: Download the reference genome
 	mkdir -p $(dir ${REF})
 	bio fetch ${ACC} -format fasta > ${REF}
 	# stats on the genome
 	seqkit stats ${REF}
-	echo "Download complete"
+	echo "# Reference genome REF=${REF}"
+	bwa index ${REF}
+	samtools faidx ${REF}
 
 analyze: download
 	# Calculate expected coverage
@@ -64,9 +69,11 @@ analyze: download
 	echo "Genome size: $$GENOME_SIZE bp"
 	echo "Expected coverage: $$EXP_COV x"
 
+bipproject:
+	bio search PRJNA887926 -H --csv
+
 fastq:
 	# Identify SRR accession numbers
-	bio search PRJNA887926 -H --csv
 	mkdir -p $(dir ${READS_DIR})
 	# Download the reads
 	fastq-dump -X ${N} -F --outdir reads --split-files ${SRR}
@@ -76,10 +83,10 @@ fastq:
 	# run stats
 	seqkit stats ${R1} ${R2}
 
-fastqc: fastq
+fastqc: 
 	# run FastQC
-	mkdir -p fastqc_reports
-	fastqc -o fastqc_reports ${R1} ${R2}
+	mkdir -p ${READS_DIR}
+	fastqc -o ${READS_DIR} ${R1} ${R2}
 
 index:
 	bwa index ${REF}
@@ -92,7 +99,7 @@ align:
 	#index the BAM file
 	samtools index ${BAM}
 
-alignment_stats: align
+alignment_stats:
 	# Expected coverage
 	GENOME_SIZE=$$(seqkit stats -T -a ${REF} | awk 'NR==2 {print $$3}')
 	READ_LEN=150
