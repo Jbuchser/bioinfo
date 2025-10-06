@@ -4,9 +4,28 @@ Makefile uses targets, commands, and dependencies to execute scripts. Unlike wit
 
 For this assignment, previous shell script used to download the genome and FASTq data for *Staphylococcus aureus* USA300 has been modified into a Makefile document, and additional steps for indexing and visualizing a BAM file have also been included. 
 
-#### Step 1: Establish variables 
+#### Step 1: Set the Makefile and establish variables 
 
 ```bash
+SHELL=/bin/bash
+
+# Execute all commands in a single shell
+.ONESHELL:
+
+# Run the shell with strict error checking.
+.SHELLFLAGS = -eu -o pipefail -c
+
+# Delete target files if the command fails.
+.DELETE_ON_ERROR:
+
+# Warn if a variable is not defined.
+MAKEFLAGS += --warn-undefined-variables
+
+# Disable built-in rules.
+MAKEFLAGS += --no-builtin-rules
+
+# ---------------------------
+
 # Variables
 
 # user-friendly name for genome
@@ -121,7 +140,7 @@ alignment_stats: align
 
 - The coverage variation was very high when looking at the full genome in IGV vs. the high coverage stemming from only sampling 10,000 reads. In IGV, there were many spaces where coverage was poor. 
 
-![My Image](igv_snapshot.png)
+![My Image](week6/igv_snapshot.png)
 
 #### Step 5: Clean 
 
