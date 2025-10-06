@@ -32,7 +32,7 @@ MAKEFLAGS += --no-builtin-rules
 NAME=MRSA-USA300
 
 #NCBI Genome accession number
-ACC=AP017922.1
+ACC=NZ_CP183317.1
 
 # SRR accession number 
 SRR=SRR21835901
@@ -57,14 +57,32 @@ N=10000
 ```
 #### Step 2: Download and analyze the reference genome
 
+usage:
+
+```
+make all
+```
+
+by default the script will use the following parameters:
+
+so make all is equivalent to
 ```bash
-download:
+make all SRR=SRR21835901
+```
+
+## Get genome
+
+This makefile operates on NCBI Genbank accession numbers.
+You can rename the genome to something more meaningful:
+
+```bash
+genome:
 	# Step 1: Download the reference genome
 	mkdir -p $(dir ${REF})
 	bio fetch ${ACC} -format fasta > ${REF}
 	# stats on the genome
 	seqkit stats ${REF}
-	echo "Download complete"
+	echo "Reference genome REF=${REF}
 
 analyze: download
 	# Calculate expected coverage
@@ -76,6 +94,8 @@ analyze: download
 ```
 #### Step 3: Download and analyze SRA sequencing reads
 
+# Get the fastq data
+
 ```bash
 fastq:
 	# Identify SRR accession numbers
@@ -83,8 +103,8 @@ fastq:
 	mkdir -p $(dir ${READS_DIR})
 	# Download the reads
 	fastq-dump -X ${N} -F --outdir reads --split-files ${SRR}
-	mv reads/SRR21835901_1.fastq ${R1}
-	mv reads/SRR21835901_2.fastq ${R2}
+	mv reads/${SRR}_1.fastq ${R1}
+	mv reads/${SRR}_2.fastq ${R2}
 	echo "Download complete"
 	# run stats
 	seqkit stats ${R1} ${R2}
@@ -110,7 +130,7 @@ align:
 	#index the BAM file
 	samtools index ${BAM}
 
-alignment_stats: align
+stats: 
 	# Expected coverage
 	GENOME_SIZE=$$(seqkit stats -T -a ${REF} | awk 'NR==2 {print $$3}')
 	READ_LEN=150
@@ -148,6 +168,8 @@ alignment_stats: align
 clean:
 	# clean up generated files
 	rm -rf ${REF} ${R1} ${R2} ${BAM} ${BAM}.bai
+
+
 
 .PHONY: all refs fastq index align clean stats
 	# create necessary directories
