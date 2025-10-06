@@ -140,7 +140,7 @@ alignment_stats: align
 
 - The coverage variation was very high when looking at the full genome in IGV vs. the high coverage stemming from only sampling 10,000 reads. In IGV, there were many spaces where coverage was poor. 
 
-![My Image](week6/igv_snapshot.png)
+![My Image](igv_snapshot.png)
 
 #### Step 5: Clean 
 
