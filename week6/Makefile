@@ -23,7 +23,7 @@ MAKEFLAGS += --no-builtin-rules
 NAME=MRSA-USA300
 
 #NCBI Genome accession number
-ACC=NZ_CP183317.1
+ACC=NC_007793.1
 
 # SRR accession number 
 SRR=SRR21835901
