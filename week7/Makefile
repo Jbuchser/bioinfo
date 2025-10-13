@@ -19,90 +19,85 @@ MAKEFLAGS += --no-builtin-rules
 
 # Variables
 
-# user-friendly name for genome
-NAME=MRSA-USA300
+NAME ?=MRSA-USA300
+ACC ?=NC_007793.1
+SRR ?= SRR21835901
+N = 10000
+ALIGNER ?= bwa
+# choose "bwa" or "minimap2"
 
-#NCBI Genome accession number
-ACC=NC_007793.1
-
-# SRR accession number 
-SRR=SRR21835901
-
-# reference genome file
 REF=refs/${NAME}.fa
-
-# reference annotation file
 GFF=refs/${NAME}.gff
-
-# reads directory
 READS_DIR=reads
-
-# read 1
 R1=reads/${SRR}_1.fastq
-
-# read 2
 R2=reads/${SRR}_2.fastq
-
-# bam file
 BAM=bam/${SRR}.bam
+BW=bigwig/${SRR}.bw
 
-# How many reads to download
-N=10000
+.PHONY: all genome fastq fastqc index align stats bigwig clean
 
 # ------------ No changes below this line ----------------
+# Targets
 
-# Step 1a: Download the reference genome
+all: genome fastq fastqc align stats bigwig
+
+# Step 1: Download the reference genome
 genome:
 	mkdir -p $(dir ${REF})
-	bio fetch ${ACC} -format fasta > ${REF}
+	bio fetch ${ACC} -format fasta >${REF}
+	bio fetch ${ACC} -format gff >${GFF}
 	seqkit stats ${REF}
-	echo "# Reference genome REF=${REF}"
 	bwa index ${REF}
 	samtools faidx ${REF}
+	minimap2 -d ${REF}.mmi ${REF}
 
-# Step 2: Search for the BioProject to find SRR numbers
-bioproject:
-	bio search PRJNA887926 -H --csv
-
-# Step 3: Download reads using SRR number and fastq-dump
+# Step 2: Download reads using SRR number and fastq-dump
 fastq:
-	mkdir -p $(dir ${READS_DIR})
-	# Download the reads
-	fastq-dump -X ${N} -F --outdir reads --split-files ${SRR}
-	mv reads/SRR21835901_1.fastq ${R1}
-	mv reads/SRR21835901_2.fastq ${R2}
-	echo "Download complete"
-	# run stats
-	seqkit stats ${R1} ${R2}
-
-# Step 4: Quality check with FastQC
-fastqc: 
 	mkdir -p ${READS_DIR}
-	fastqc -o ${READS_DIR} ${R1} ${R2}
+	fastq-dump -X ${N} -F --outdir reads --split-files ${SRR}
+	mv ${READS_DIR}/${SRR}_1.fastq ${R1} || true
+	mv ${READS_DIR}/${SRR}_2.fastq ${R2} || true
+	seqkit stats ${R1} ${R2} || true
 
-# Step 5: Index the reference genome with BWA
-index:
-	bwa index ${REF}
+# Step 3: Quality check with FastQC
+fastqc: 
+	mkdir -p qc
+	fastqc -o qc ${R1} ${R2} || true
 
-# Step 6: Align reads to the reference genome with BWA-MEM and convert to sorted BAM
+# Step 4: Align based on aligner type 
 align:
-	mkdir -p $(dir ${BAM})
-	bwa mem -t 4 ${REF} ${R1} ${R2} | samtools sort > ${BAM}
-	samtools index ${BAM}
+	mkdir -p bam
+	if [ "$(ALIGNER)" = "bwa" ]; then \
+		bwa mem -t 4 refs/MRSA-USA300.fa reads/$*_1.fastq reads/$*_2.fastq | samtools sort > $@; \
+	elif [ "$(ALIGNER)" = "minimap2" ]; then \
+	if [ -f reads/${SRR}_2.fastq ]; then \
+		 minimap2 --MD -ax sr refs/MRSA-USA300.fa reads/${SRR}_1.fastq reads/${SRR}_2.fastq | samtools sort > bam/${SRR}.bam; \
+	else \
+		minimap2 --MD -ax map-ont refs/MRSA-USA300.fa reads/${SRR}_1.fastq | samtools sort > bam/${SRR}.bam; \
+	fi; \
+	else \
+		echo "Error: Unknown aligner '$(ALIGNER)'. Use 'bwa' or 'minimap2'."; exit 1; \
+	fi
+	samtools index bam/${SRR}.bam
+	echo "Alignment complete: ${BAM}"
 
-# Step 7: Alignment statistics
+# Step 5: Alignment statistics
 stats:
-	GENOME_SIZE=$$(seqkit stats -T -a ${REF} | awk 'NR==2 {print $$3}')
-	READ_LEN=150
-	NUM_READS=$$(samtools view -c ${BAM})
-	EXP_COV=$$(echo "scale=2; $$NUM_READS * $$READ_LEN / $$GENOME_SIZE" | bc)
-	echo "Genome size: $$GENOME_SIZE bp"
-	echo "Number of reads: $$NUM_READS"
-	echo "Expected coverage: $$EXP_COV x"
+	samtools flagstat ${BAM} > ${BAM}_stats.txt
+	cat ${BAM}_stats.txt
+
+# Step 8: Convert BAM to BigWig for visualization
+bigwig:
+	mkdir -p bigwig
+	bedtools genomecov -ibam ${BAM} -bg > ${BAM%.bam}.bedgraph
+	sort -k1,1 -k2,2n ${BAM%.bam}.bedgraph > ${BAM%.bam}_sorted.bedgraph
+	# extract chromosome sizes from the reference index
+	samtools faidx ${REF}
+	cut -f1,2 ${REF}.fai > ${NAME}.chrom.sizes
+	bedGraphToBigWig ${BAM%.bam}_sorted.bedgraph ${NAME}.chrom.sizes ${BW}
+	rm ${BAM%.bam}.bedgraph ${BAM%.bam}_sorted.bedgraph
+	echo "BigWig file created: ${BW}"
 
 # Step 8: Clean up intermediate files
 clean:
 	rm -rf ${REF} ${R1} ${R2} ${BAM} ${BAM}.bai
-
-# Step 9: Full pipeline
-all: genome bioproject fastq fastqc align alignment_stats
