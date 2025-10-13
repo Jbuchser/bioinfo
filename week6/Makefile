@@ -49,10 +49,10 @@ BAM=bam/${SRR}.bam
 # How many reads to download
 N=10000
 
-# ----------------
+# ------------ No changes below this line ----------------
 
+# Step 1: Download the reference genome
 genome:
-	# Step 1: Download the reference genome
 	mkdir -p $(dir ${REF})
 	bio fetch ${ACC} -format fasta > ${REF}
 	# stats on the genome
@@ -61,16 +61,12 @@ genome:
 	bwa index ${REF}
 	samtools faidx ${REF}
 
-analyze:
-	# Calculate expected coverage
-	GENOME_SIZE=$$(seqkit stats -T -a ${REF} | awk 'NR==2 {print $$3}')
-	READ_LEN=150
-	EXP_COV=$$(echo "scale=2; ${N} * $$READ_LEN / $$GENOME_SIZE" | bc)
-	echo "Genome size: $$GENOME_SIZE bp"
-	echo "Expected coverage: $$EXP_COV x"
+# Step 2: Search for the BioProject
+bioproject:
+	bio search PRJNA887926 -H --csv
 
+# Step 3: Download reads using SRR number and fastq-dump
 fastq:
-	# Identify SRR accession numbers
 	mkdir -p $(dir ${READS_DIR})
 	# Download the reads
 	fastq-dump -X ${N} -F --outdir reads --split-files ${SRR}
@@ -80,14 +76,17 @@ fastq:
 	# run stats
 	seqkit stats ${R1} ${R2}
 
+# Step 4: Quality check with FastQC
 fastqc: 
 	# run FastQC
 	mkdir -p ${READS_DIR}
 	fastqc -o ${READS_DIR} ${R1} ${R2}
 
+# Step 5: Index the reference genome with BWA
 index:
 	bwa index ${REF}
 
+# Step 6: Align reads to the reference genome with BWA-MEM and convert to sorted BAM
 align:
 	# make BAM directory
 	mkdir -p $(dir ${BAM})
@@ -96,6 +95,7 @@ align:
 	#index the BAM file
 	samtools index ${BAM}
 
+# Step 7: Alignment statistics
 stats:
 	# Expected coverage
 	GENOME_SIZE=$$(seqkit stats -T -a ${REF} | awk 'NR==2 {print $$3}')
@@ -120,6 +120,6 @@ stats:
 	# Save coverage to a file
 	samtools depth ${BAM} | awk '{print $$3}' > coverage_values.txt
 
+# Step 8: Clean up intermediate files
 clean:
-	# clean up generated files
 	rm -rf ${REF} ${R1} ${R2} ${BAM} ${BAM}.bai
