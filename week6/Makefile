@@ -61,16 +61,13 @@ genome:
 	bwa index ${REF}
 	samtools faidx ${REF}
 
-analyze: download
+analyze:
 	# Calculate expected coverage
 	GENOME_SIZE=$$(seqkit stats -T -a ${REF} | awk 'NR==2 {print $$3}')
 	READ_LEN=150
 	EXP_COV=$$(echo "scale=2; ${N} * $$READ_LEN / $$GENOME_SIZE" | bc)
 	echo "Genome size: $$GENOME_SIZE bp"
 	echo "Expected coverage: $$EXP_COV x"
-
-bipproject:
-	bio search PRJNA887926 -H --csv
 
 fastq:
 	# Identify SRR accession numbers
@@ -99,7 +96,7 @@ align:
 	#index the BAM file
 	samtools index ${BAM}
 
-alignment_stats:
+stats:
 	# Expected coverage
 	GENOME_SIZE=$$(seqkit stats -T -a ${REF} | awk 'NR==2 {print $$3}')
 	READ_LEN=150
@@ -126,6 +123,3 @@ alignment_stats:
 clean:
 	# clean up generated files
 	rm -rf ${REF} ${R1} ${R2} ${BAM} ${BAM}.bai
-
-.PHONY: all refs fastq index align clean stats
-	# create necessary directories
