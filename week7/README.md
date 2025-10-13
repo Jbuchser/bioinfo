@@ -60,10 +60,10 @@ Alignment for Oxford Nanopore single-end reads should use minimap2 (better for l
 #### Briefly describe the differences between the alignment in both files:
 
 **Illumina**
-![My Image](images/illumina_igv_snapshot.png)
+![My Image](illumina_igv_snapshot.png)
 
 **Nanopore**
-![My Image](images/igv_snapshot_ON.png)
+![My Image](igv_snapshot_ON.png)
 
 Both have good mapping coverage but different alignment patterns due to read style (long vs. short reads)
 
