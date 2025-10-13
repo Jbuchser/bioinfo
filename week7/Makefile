@@ -24,7 +24,9 @@ ACC ?=NC_007793.1
 SRR ?= SRR21835901
 N = 10000
 ALIGNER ?= bwa
-# choose "bwa" or "minimap2"
+platform ?= illumina
+# choose "bwa" or "minimap2" for ALIGNER
+# choose "illumina" or "nanopore" for platform
 
 REF=refs/${NAME}.fa
 GFF=refs/${NAME}.gff
