@@ -13,6 +13,12 @@ make all
 make genome
 ```
 
+#### Use the bioproject info to get the SRR number(s)
+
+```bash
+make bioproject
+```
+
 #### Download and analyze SRA sequencing reads using FastQ data
 
 ```bash
