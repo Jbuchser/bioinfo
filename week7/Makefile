@@ -51,7 +51,7 @@ N=10000
 
 # ------------ No changes below this line ----------------
 
-# Step 1: Download the reference genome
+# Step 1a: Download the reference genome
 genome:
 	mkdir -p $(dir ${REF})
 	bio fetch ${ACC} -format fasta > ${REF}
@@ -60,17 +60,11 @@ genome:
 	bwa index ${REF}
 	samtools faidx ${REF}
 
-analyze: 
-	GENOME_SIZE=$$(seqkit stats -T -a ${REF} | awk 'NR==2 {print $$3}')
-	READ_LEN=150
-	EXP_COV=$$(echo "scale=2; ${N} * $$READ_LEN / $$GENOME_SIZE" | bc)
-	echo "Genome size: $$GENOME_SIZE bp"
-	echo "Expected coverage: $$EXP_COV x"
-
+# Step 2: Search for the BioProject to find SRR numbers
 bioproject:
 	bio search PRJNA887926 -H --csv
 
-# Step 2: Download reads using SRR number and fastq-dump
+# Step 3: Download reads using SRR number and fastq-dump
 fastq:
 	mkdir -p $(dir ${READS_DIR})
 	# Download the reads
@@ -81,23 +75,23 @@ fastq:
 	# run stats
 	seqkit stats ${R1} ${R2}
 
-# Step 3: Quality check with FastQC
+# Step 4: Quality check with FastQC
 fastqc: 
 	mkdir -p ${READS_DIR}
 	fastqc -o ${READS_DIR} ${R1} ${R2}
 
-# Step 4: Index the reference genome with BWA
+# Step 5: Index the reference genome with BWA
 index:
 	bwa index ${REF}
 
-# Step 5: Align reads to the reference genome with BWA-MEM and convert to sorted BAM
+# Step 6: Align reads to the reference genome with BWA-MEM and convert to sorted BAM
 align:
 	mkdir -p $(dir ${BAM})
 	bwa mem -t 4 ${REF} ${R1} ${R2} | samtools sort > ${BAM}
 	samtools index ${BAM}
 
-# Step 6: Alignment statistics
-alignment_stats:
+# Step 7: Alignment statistics
+stats:
 	GENOME_SIZE=$$(seqkit stats -T -a ${REF} | awk 'NR==2 {print $$3}')
 	READ_LEN=150
 	NUM_READS=$$(samtools view -c ${BAM})
@@ -106,9 +100,9 @@ alignment_stats:
 	echo "Number of reads: $$NUM_READS"
 	echo "Expected coverage: $$EXP_COV x"
 
-# Step 7: Clean up intermediate files
+# Step 8: Clean up intermediate files
 clean:
 	rm -rf ${REF} ${R1} ${R2} ${BAM} ${BAM}.bai
 
-# Step 8: Full pipeline
+# Step 9: Full pipeline
 all: genome bioproject fastq fastqc align alignment_stats
