@@ -9,12 +9,12 @@ make all
 ```
 or, run each command individually using the make commands below:
 
-#### 2. Create a minimal design.csv extracted from the full BioProject dataset
+#### 2. Create a minimal design.csv (sample name and SRR number only) extracted from the full BioProject dataset
 
 ```bash
 make design
 ```
-#### 3. Download the genome and save it with a user-friendly name
+#### 3. Download the genome and save it with a user-friendly name (MRSA-USA300 in this example)
 
 ```bash
 make genome
