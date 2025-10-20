@@ -37,7 +37,7 @@ all:
 	make align
 	make stats
 	make bigwig
-	@echo "✅ Workflow complete!"
+	@echo "Pipeline complete"
 
 # ---------------- Design file ----------------
 design:
