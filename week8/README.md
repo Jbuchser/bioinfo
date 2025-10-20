@@ -1,4 +1,4 @@
-This assignment reuses the Makefile from Week 7 (with new changes for parallel automation), and also includes a design.csv file listing minimal SRR data from BioProject PRJNA887926. 
+This assignment reuses the Makefile from Week 7 (with new changes for parallel automation), and also includes a design.csv file listing minimal SRR data (sample ID and SRR number) from BioProject PRJNA887926. 
 
 Additionally, the Makefile is reusable with different BioProject and SRR numbers if needed. 
 
