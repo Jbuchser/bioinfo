@@ -1,7 +1,7 @@
 This assignment revises and improves the automated code from Week 8. 
 Inside looping was removed in favor of using GNU parallel from the outside. 
 
-Additonal changes included revising the design command to extract BioProject metadata directly from NCBI (previously the command used a manually downloaded file saved to Excel), and "tail" was removed from the parallel command.  
+Additonal changes included revising the design command to extract BioProject metadata directly from NCBI for reference genome NC_007793.1 *Staphylococcus aureus* strain USA_300 (previously the command used a manually downloaded file saved to Excel), and adjusting the formatting of my parallel command. 
 
 #### 1. Create a minimal design.csv (sample name and SRR number only) extracted from the full BioProject dataset
 
