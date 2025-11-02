@@ -6,7 +6,8 @@ The data flow for this pipeline is:
 2. Align FASTQ reads with the reference genome
 3. Use alignment software to produce a BAM file
 4. Call variants by comparing the aligned BAM file to the reference genome
-5. Produce a VCF file 
+5. Produce VCF files
+6. Merge VCF files 
 
 Note: The reference genome used in this workflow is NC_007793.1 *Staphylococcus aureus* strain USA_300
 
@@ -75,7 +76,7 @@ make call_variants
 cat design.csv | parallel --colsep , --header : -j 2 "make all SAMPLE={sample} SRR={SRR}"
 ```
 
-This step uses GNU parallel to align and process (run QC, measure stats, convert to BigWig, and call variants) each run. 
+This step uses GNU parallel and the *make all* command to align, process, and call variants for each sample (make all: reads, FastQC, align, stats, bigwig, call variants). 
 
 #### After running multiple samples in parallel, use this command to merge each VCF file. The output of this command provides statistics on variants from all samples. 
 
