@@ -86,13 +86,13 @@ make merge_vcf
 
 Output of the 6 merged VCF files:
 
-**Number of samples:** 6
-**Total variant sites:** 1399
-**Total SNPs:** 1341
-**Total indels:** 58
-**Total multiallelic sites:** 7
-**Total transitions/transversions:** 2.19
-**Singletons (variants per 1 sample):** 331
-**Depth distribution:** 1-4x coverage/site
+**Number of samples:** 6 <br>
+**Total variant sites:** 1399 <br>
+**Total SNPs:** 1341 <br>
+**Total indels:** 58 <br>
+**Total multiallelic sites:** 7 <br>
+**Total transitions/transversions:** 2.19 <br>
+**Singletons (variants per 1 sample):** 331 <br>
+**Depth distribution:** 1-4x coverage/site <br>
 
 The observed low coverage is likely due to downloading only a subset of reads (N=10000). 
