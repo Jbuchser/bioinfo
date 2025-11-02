@@ -14,6 +14,7 @@ REF_DIR = refs
 QC_DIR = qc
 BAM_DIR = bam
 BW_DIR = bigwig
+VCF_DIR = vcf
 REF_SIZES = ${REF}.chrom.sizes
 
 NAME ?= MRSA-USA300
@@ -109,6 +110,30 @@ bigwig:
 	bedGraphToBigWig ${BAM_DIR}/${SAMPLE}.bedgraph ${REF}.chrom.sizes ${BW_DIR}/${SAMPLE}.bw
 	rm -f ${BAM_DIR}/${SAMPLE}.bedgraph
 
+# ---------------- Call Variants ----------------
+call_variants:
+	@if [ -z "${SAMPLE}" ]; then echo "Must specify SAMPLE"; exit 1; fi
+	mkdir -p ${VCF_DIR}
+	echo "Calling variants for ${SAMPLE}..."
+	bcftools mpileup -Ou -f ${REF} ${BAM_DIR}/${SAMPLE}.bam | \
+		bcftools call -mv -Oz -o ${VCF_DIR}/${SAMPLE}.vcf.gz
+	bcftools index ${VCF_DIR}/${SAMPLE}.vcf.gz
+	bcftools stats ${VCF_DIR}/${SAMPLE}.vcf.gz > ${VCF_DIR}/${SAMPLE}_vcf_stats.txt
+	@echo "Variants called and saved to ${VCF_DIR}/${SAMPLE}.vcf.gz"
+
+# ---------------- Merge VCF ----------------
+merge_vcf:
+	@echo "Merging all individual VCFs..."
+	mkdir -p ${VCF_DIR}
+	if [ $$(ls ${VCF_DIR}/*.vcf.gz 2>/dev/null | wc -l) -gt 1 ]; then \
+		bcftools merge ${VCF_DIR}/*.vcf.gz -Oz -o ${VCF_DIR}/merged.vcf.gz; \
+		bcftools index ${VCF_DIR}/merged.vcf.gz; \
+		bcftools stats ${VCF_DIR}/merged.vcf.gz > ${VCF_DIR}/merged_stats.txt; \
+		echo "Created multisample VCF: ${VCF_DIR}/merged.vcf.gz"; \
+	else \
+		echo "Only one VCF found — skipping merge."; \
+	fi
+
 # ---------------- Clean ----------------
 clean:
 	rm -rf ${READS_DIR} ${QC_DIR} ${BAM_DIR} ${BW_DIR}
@@ -116,5 +141,6 @@ clean:
 	rm -f ${DESIGN}
 
 # ---------- Run in sequence ------------
-all: reads fastqc align stats bigwig
-	@echo "Pipeline complete"
+all: reads fastqc align stats bigwig call_variants
+	@echo "Pipeline complete with variant calling"
+
