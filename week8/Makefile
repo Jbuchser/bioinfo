@@ -17,7 +17,7 @@ BW_DIR = bigwig
 
 NAME ?= MRSA-USA300
 ACC ?= NC_007793.1
-PRJ ?= PRJNA646837
+PRJ ?= PRJNA887926
 N ?= 100000
 ALIGNER ?= bwa
 
@@ -49,7 +49,7 @@ design:
 # ---------------- Genome ----------------
 genome:
 	@echo "Downloading reference genome ${ACC}..."
-	mkdir -p ${REF_DIR}
+	mkdir -p ${REF_DIR}\
 	bio fetch ${ACC} -format fasta > ${REF}
 	bio fetch ${ACC} -format gff > ${GFF}
 	seqkit stats ${REF}

@@ -33,7 +33,6 @@ GFF = ${REF_DIR}/${NAME}.gff
 
 design:
 	mkdir -p $(dir ${DESIGN})
-	# Step 1: Retrieve the full run metadata from NCBI SRA
 	esearch -db sra -query "${PRJ}" | efetch -format runinfo > "${FULL_DESIGN}"
 	@echo "Saved full metadata to ${FULL_DESIGN}"
 	awk -F, 'NR==1 {
@@ -52,7 +51,7 @@ design:
 
 # ---------------- Genome ----------------
 genome:
-	@echo "📥 Downloading reference genome ${ACC}..."
+	@echo "Downloading reference genome ${ACC}..."
 	mkdir -p ${REF_DIR}
 	bio fetch ${ACC} -format fasta > ${REF}
 	bio fetch ${ACC} -format gff > ${GFF}
