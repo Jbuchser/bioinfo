@@ -94,3 +94,5 @@ Output of the 6 merged VCF files:
 **Total transitions/transversions:** 2.19
 **Singletons (variants per 1 sample):** 331
 **Depth distribution:** 1-4x coverage/site
+
+The observed low coverage is likely due to downloading only a subset of reads (N=10000). 
