@@ -134,11 +134,50 @@ merge_vcf:
 		echo "Only one VCF found — skipping merge."; \
 	fi
 
+# ---------------- Check for variants ----------------
+check_variants:
+	@echo "Checking variant summary in merged VCF..."
+	grep "^SN" ${VCF_DIR}/merged_stats.txt | head -n 15
+
+# ---------------- SnpEff Build ----------------
+snpeff_build:
+	@echo "Building custom SnpEff database for ${ACC} (${NAME})..."
+	mkdir -p ~/.snpEff/data/${ACC}
+	cp ${REF} ~/.snpEff/data/${ACC}/sequences.fa
+	cp ${GFF} ~/.snpEff/data/${ACC}/genes.gff
+	sed -i '' "/${ACC}.genome/d" ~/.snpEff/snpEff.config || true
+	echo "${ACC}.genome : ${NAME}" >> ~/.snpEff/snpEff.config
+	snpEff build -gff3 -v ${ACC}
+
+# ---------------- Annotate Variants ----------------
+annotate_variants:
+	@echo "Annotating variants using SnpEff..."
+	snpEff ann -v -s ${VCF_DIR}/merged_summary.html ${ACC} ${VCF_DIR}/merged.vcf.gz > ${VCF_DIR}/merged.ann.vcf
+	@echo "Annotation complete. Output: ${VCF_DIR}/merged.ann.vcf"
+
+# ---------------- Annotation Summary ----------------
+annotate_summary:
+	@echo "Summarizing variant impact categories..."
+	grep "ANN=" ${VCF_DIR}/merged.ann.vcf | cut -f8 | grep -o "HIGH\|MODERATE\|LOW\|MODIFIER" | sort | uniq -c
+
+# ---------------- Open Summary ----------------
+open_summary:
+	@echo "Opening SnpEff summary HTML..."
+	open ${VCF_DIR}/merged_summary.html
+
+# ---------------- Run Variant Effect Annotation Pipeline ----------------
+run_ann:
+	@$(MAKE) check_variants
+	@$(MAKE) snpeff_build
+	@$(MAKE) annotate_variants
+	@$(MAKE) annotate_summary
+
 # ---------------- Clean ----------------
 clean:
 	rm -rf ${READS_DIR} ${QC_DIR} ${BAM_DIR} ${BW_DIR}
 	rm -f ${REF_DIR}/*.fai ${REF_DIR}/*.bwt ${REF_DIR}/*.pac ${REF_DIR}/*.sa ${REF_DIR}/*.ann ${REF_DIR}/*.amb
 	rm -f ${DESIGN}
+	rm -f ${VCF_DIR}/merged.ann.vcf ${VCF_DIR}/merged_summary.html ${VCF_DIR}/merged_summary.genes.txt
 
 # ---------- Run in sequence ------------
 all: reads fastqc align stats bigwig call_variants
