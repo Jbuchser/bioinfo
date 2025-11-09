@@ -22,6 +22,7 @@ This assignment reuses the automated code from Weeks 9 and 10 and generates a VC
 |----------|--------------|--------------|----------------|
 | `make genome` | Downloads the reference genome (FASTA) and annotation (GFF) files for *Staphylococcus aureus* USA300 (NC_007793.1). | NCBI FTP URLs | `refs/MRSA-USA300.fa`, `refs/MRSA-USA300.gff` |
 | `make index` | Builds an index of the reference genome for read alignment (using `bwa index` or `minimap2 -d`). | `refs/MRSA-USA300.fa` | Genome index files in `refs/` |
+| `make design` | Saves SRA metadata and extrapolates key SRR data into a minimal design.csv file | | `design.csv` |
 | `make reads` | Downloads raw sequencing reads for all SRA accessions listed in `design.csv`. | `design.csv` (with SRR IDs) | `reads/*.fastq.gz` |
 | `make fastqc` | Runs FastQC on all reads to assess sequence quality before alignment. | `reads/*.fastq.gz` | `fastqc/*.html`, `fastqc/*.zip` |
 | `make align` | Aligns reads to the reference genome and outputs sorted BAM files (via `bwa mem` or `minimap2` + `samtools sort`). | `reads/*.fastq.gz`, `refs/MRSA-USA300.fa` | `bam/*.bam` |
