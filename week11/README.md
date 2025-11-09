@@ -27,6 +27,7 @@ The work flow for this pipeline is:
 | `make stats` | Summarizes alignment quality metrics using `samtools stats` or `samtools flagstat`. | `bam/*.bam` | `bam/*.stats.txt` |
 | `make bigwig` | Generates normalized coverage tracks for visualization in IGV using `bamCoverage`. | `bam/*.bam` | `bigwig/*.bw` |
 | `make vcf` | Calls variants (SNPs and indels) using `bcftools mpileup` and `bcftools call`, and merges them. | `bam/*.bam`, `refs/MRSA-USA300.fa` | `vcf/merged.vcf.gz`, `vcf/merged.vcf.gz.csi` |
+| `make merge_vcf` | Merges all individual sample VCFs into a **multisample VCF**, indexes it, and generates variant statistics. | `vcf/*.vcf.gz` | `vcf/merged.vcf.gz`, `vcf/merged.vcf.gz.csi`, `vcf/merged_stats.txt` |
 | `make all` | Runs the entire pipeline: genome download → index → reads → fastqc → align
 
 #### **GNU parallel can be used to run multiple SRRs from make all:**
@@ -37,9 +38,21 @@ cat design.csv | parallel --colsep , --header : -j 2 "make all SAMPLE={sample} S
 
 ## Part II: Establish the effects of variants
 
+Each of the below steps can also be run using the Make commands:
+
+| **Make Target** | **Command(s)** | **Purpose / Description** | **Output(s)** |
+|------------------|----------------|-----------------------------|----------------|
+| `check_variants` | `grep "^SN" ${VCF_DIR}/merged_stats.txt \| head -n 15` | Verifies that the merged VCF contains expected numbers of variants (SNPs, indels, etc.). | Prints summary to terminal. |
+| `snpeff_build` | `snpEff build -gff3 -v ${ACC}` | Builds a **custom SnpEff genome database** from `${REF}` (FASTA) and `${GFF}` (GFF3 annotation). | Creates database in `~/.snpEff/data/${ACC}/`. |
+| `annotate_variants` | `snpEff ann -v -s ${VCF_DIR}/merged_summary.html ${ACC} ${VCF_DIR}/merged.vcf.gz > ${VCF_DIR}/merged.ann.vcf` | Annotates variants in the merged VCF using the SnpEff database for `${ACC}`. | `merged.ann.vcf` and HTML report in `${VCF_DIR}/`. |
+| `annotate_summary` | `grep "ANN=" ${VCF_DIR}/merged.ann.vcf \| cut -f8 \| grep -o "HIGH\|MODERATE\|LOW\|MODIFIER" \| sort \| uniq -c` | Counts how many variants fall into each predicted impact class (HIGH, MODERATE, LOW, MODIFIER). | Prints counts to terminal. |
+| `open_summary` | `open ${VCF_DIR}/merged_summary.html` | Opens the interactive HTML summary of SnpEff results (macOS). | Launches HTML report in browser. |
+| `clean_ann` | `rm -f ${VCF_DIR}/merged.ann.vcf ${VCF_DIR}/merged_summary.html ${VCF_DIR}/merged_summary.genes.txt` | Deletes old SnpEff annotation files to rerun cleanly. | Removes annotation output files. |
+
+
 #### 1. After merging my VCF files, I doublechecked for variants in my results and confirmed I had at least 3 or more variants to work with:
 ```bash
-grep "^SN" vcf/merged_stats.txt | head -n 15
+make check_variants
 ```
 **Output:**
 ```bash
@@ -64,9 +77,7 @@ unzip snpEff_latest_core.zip
 #### 3. Next, I tried to download the reference *S. aureus* genome from snpEff but received an error on remote connectivity to the snpEff server. Instead, I built the reference genome NC_007793.1 into snpEff. 
 
 ```bash
- snpEff build -c ~/.snpEff/snpEff.config -gff3 -v NC_007793.1
-snpEff ann   -c ~/.snpEff/snpEff.config NC_007793.1 vcf/merged.vcf.gz > vcf/merged.ann.vcf
-head -n 20 vcf/merged.ann.vcf | grep -v "^#"
+make snpeff_build
  ```
 
 **Output** (confirming genome was built):
@@ -83,6 +94,8 @@ The result of the output file was empty so I troubleshot by again verifying my v
 ```bash
 # Verify variants exist
 bcftools view -H vcf/merged.vcf.gz | head -n 10
+
+make annotate_variants
 
 # Re-annotate 
 snpEff ann -v NC_007793.1 vcf/merged.vcf.gz > vcf/merged.ann.vcf
