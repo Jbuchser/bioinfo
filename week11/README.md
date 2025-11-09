@@ -1,8 +1,7 @@
 This assignment reuses the automated code from Weeks 9 and 10 and generates a VCF file. 
 3 unique variants from the VCF file evaluated using snpEFF. 
 
-
-The work flow for this pipeline is:
+**The work flow for this pipeline is:**
 
 1. Collect the FASTQ reads and reference genome
 2. Align FASTQ reads with the reference genome
@@ -14,6 +13,8 @@ The work flow for this pipeline is:
 
 **Additional information:**
 - The reference genome used in this workflow is **NC_007793.1 *Staphylococcus aureus* strain USA_300**
+
+## Part I: Download and index the reference genome, make a design.csv using read data, and generate a VCF file
 
 - Each step of the individual Makefile is summarized below:
 
@@ -36,7 +37,7 @@ The work flow for this pipeline is:
 cat design.csv | parallel --colsep , --header : -j 2 "make all SAMPLE={sample} SRR={SRR}"
 ```
 
-## Part II: Establish the effects of variants
+## Part II: Establish the effects of variants using SnpEff
 
 Each of the below steps can also be run using the Make commands:
 
