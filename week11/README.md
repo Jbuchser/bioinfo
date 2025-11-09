@@ -47,8 +47,6 @@ Each of the below steps can also be run using the Make commands:
 | `annotate_variants` | `snpEff ann -v -s ${VCF_DIR}/merged_summary.html ${ACC} ${VCF_DIR}/merged.vcf.gz > ${VCF_DIR}/merged.ann.vcf` | Annotates variants in the merged VCF using the SnpEff database for `${ACC}`. | `merged.ann.vcf` and HTML report in `${VCF_DIR}/`. |
 | `annotate_summary` | `grep "ANN=" ${VCF_DIR}/merged.ann.vcf \| cut -f8 \| grep -o "HIGH\|MODERATE\|LOW\|MODIFIER" \| sort \| uniq -c` | Counts how many variants fall into each predicted impact class (HIGH, MODERATE, LOW, MODIFIER). | Prints counts to terminal. |
 | `open_summary` | `open ${VCF_DIR}/merged_summary.html` | Opens the interactive HTML summary of SnpEff results (macOS). | Launches HTML report in browser. |
-| `clean_ann` | `rm -f ${VCF_DIR}/merged.ann.vcf ${VCF_DIR}/merged_summary.html ${VCF_DIR}/merged_summary.genes.txt` | Deletes old SnpEff annotation files to rerun cleanly. | Removes annotation output files. |
-
 
 #### 1. After merging my VCF files, I doublechecked for variants in my results and confirmed I had at least 3 or more variants to work with:
 ```bash
@@ -89,45 +87,30 @@ make snpeff_build
 #-----------------------------------------------
 Done
 ```
-The result of the output file was empty so I troubleshot by again verifying my variants exist and re-annotated them:
+I annotated and summmarized my variants (building a visual HTML summary of the results output):
 
 ```bash
-# Verify variants exist
-bcftools view -H vcf/merged.vcf.gz | head -n 10
-
 make annotate_variants
 
-# Re-annotate 
-snpEff ann -v NC_007793.1 vcf/merged.vcf.gz > vcf/merged.ann.vcf
-
-
-# Retry the output
-grep -v "^#" vcf/merged.ann.vcf | head -n 20
-
-# Build an HTML summary of the output
- snpEff ann -v -s vcf/merged_summary.html NC_007793.1 vcf/merged.vcf.gz > vcf/merged.ann.vcf
+make annotate_summary
 ```
-
-#### 4. I visualized my results using:
-```bash
-open vcf/merged_summary.html
-```
-**Example output:**
-![alt text](snpEFF_summary-1.png)
-![alt text](variants1-1.png)
-
-#### 5. I listed the variants by effect using:
-```bash
-grep "ANN=" vcf/merged.ann.vcf | cut -f8 | grep -o "HIGH\|MODERATE\|LOW\|MODIFIER" | sort | uniq -c
-```
-**Output:**
+**Output of summary:**
 ```bash
  101 HIGH
  496 LOW
  856 MODERATE
 18697 MODIFIER
 ```
-#### 6. I picked 3 variants from my annotated output to analyze (one from High, Moderate, and Low categories):
+
+#### 4. I visualized my results using:
+```bash
+make open_summary
+```
+**Example output:**
+![alt text](snpEFF_summary-1.png)
+![alt text](variants1-1.png)
+
+#### 7. I picked 3 variants from my annotated output to analyze (one from High, Moderate, and Low categories):
 
 | Position | Reference → Alt | Gene | Effect Type | Impact | Protein Change | Description |
 |-----------|----------------|------|--------------|---------|----------------|--------------|
@@ -136,3 +119,8 @@ grep "ANN=" vcf/merged.ann.vcf | cut -f8 | grep -o "HIGH\|MODERATE\|LOW\|MODIFIE
 | 4337 | C → G | **recF** | synonymous_variant | **LOW** | p.Arg133Arg | Silent mutation in the recombination/repair gene *recF*; does not alter amino-acid sequence, likely neutral. |
 
 
+#### 8. All Make commands for variant effect evaluation using snpEff are run using: 
+
+```bash
+make run_ann
+```
