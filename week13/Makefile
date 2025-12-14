@@ -1,11 +1,8 @@
 # =========================
-# Makefile — Assignment 13
+# Makefile — Assignment 13 RNA-Seq Pipeline
 # =========================
 
-# ============================================================
-# Assignment 13 — Clean RNA-seq Pipeline Makefile
-# ============================================================
-
+# ============================ MAKEFILE SETTINGS ============================
 SHELL := /bin/bash
 .ONESHELL:
 .SHELLFLAGS := -eu -o pipefail -c
