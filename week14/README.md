@@ -89,6 +89,8 @@ Rscript src/r/plot_pca.r \
 Output:
 ![PCA plot](pca.png)
 
+Principle component analysis demonstrates tight clustering of replicates by condition (treatment vs. control). There is 7% variance on PC2 due to vertical spread, particularly by SRR21835896. 
+
 ### Step 6: 
 
 A heat map was generated using the edgeR.csv and count.csv data. 
